@@ -190,11 +190,7 @@ class TodoList extends Component {
     super();
 
     this.state = {
-      todos: [
-        { text: "Сделать домашку", done: false },
-        { text: "Сделать практику", done: false },
-        { text: "Пойти домой", done: false },
-      ],
+      todos: this.loadTodos(),
     };
 
     this.onAddTask = this.onAddTask.bind(this);
@@ -212,16 +208,21 @@ class TodoList extends Component {
       done: false,
     });
 
+    this.saveTodos();
     this.update();
   }
 
   onToggleTask(index) {
     this.state.todos[index].done = !this.state.todos[index].done;
+
+    this.saveTodos();
     this.update();
   }
 
   onDeleteTask(index) {
     this.state.todos.splice(index, 1);
+
+    this.saveTodos();
     this.update();
   }
 
@@ -244,6 +245,23 @@ class TodoList extends Component {
           this.state.todos.map((todo, index) => this.renderTodo(todo, index))
       ),
     ]);
+  }
+  loadTodos() {
+    const savedTodos = localStorage.getItem("todos");
+
+    if (savedTodos) {
+      return JSON.parse(savedTodos);
+    }
+
+    return [
+      { text: "Сделать домашку", done: false },
+      { text: "Сделать практику", done: false },
+      { text: "Пойти домой", done: false },
+    ];
+  }
+
+  saveTodos() {
+    localStorage.setItem("todos", JSON.stringify(this.state.todos));
   }
 }
 
