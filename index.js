@@ -1,4 +1,4 @@
-﻿function createElement(tag, attributes, children) {
+﻿function createElement(tag, attributes, children, callbacks) {
   const element = document.createElement(tag);
 
   if (attributes) {
@@ -19,6 +19,11 @@
     element.appendChild(document.createTextNode(children));
   } else if (children instanceof HTMLElement) {
     element.appendChild(children);
+  }
+  if (callbacks) {
+    Object.keys(callbacks).forEach((eventName) => {
+      element.addEventListener(eventName, callbacks[eventName]);
+    });
   }
 
   return element;
@@ -65,6 +70,26 @@ class TodoList extends Component {
       ]),
       createElement("ul", { id: "todos" }, this.state.todos.map((todo) => this.renderTodo(todo))),
     ]);
+  }
+  onAddTask() {
+    const text = this.state.addInputValue.trim();
+
+    if (!text) {
+      return;
+    }
+
+    this.state.todos.push({
+      text,
+      done: false,
+    });
+
+    this.state.addInputValue = "";
+
+    this.update();
+  }
+
+  onAddInputChange(event) {
+    this.state.addInputValue = event.target.value;
   }
 }
 
