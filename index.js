@@ -31,11 +31,18 @@
 
 class Component {
   constructor() {
+    this._domNode = null;
   }
 
   getDomNode() {
     this._domNode = this.render();
     return this._domNode;
+  }
+  update() {
+    const oldDomNode = this._domNode;
+    const newDomNode = this.render();
+    oldDomNode.replaceWith(newDomNode);
+    this._domNode = newDomNode;
   }
 }
 
@@ -48,7 +55,10 @@ class TodoList extends Component {
         {text : "Сделать практику", done: false},
         {text: "Пойти домой", done: false},
       ],
+      addInputValue : "",
     }
+    this.onAddTask = this.onAddTask.bind(this);
+    this.onAddInputChange = this.onAddInputChange.bind(this);
   }
   renderTodo(todo) {
     return createElement("li", {}, [
@@ -65,8 +75,9 @@ class TodoList extends Component {
           id: "new-todo",
           type: "text",
           placeholder: "Задание",
-        }),
-        createElement("button", { id: "add-btn" }, "+"),
+          value: this.state.addInputValue
+        }, [],   { input: this.onAddInputChange }),
+        createElement("button", { id: "add-btn" }, "+", {click : this.onAddTask}),
       ]),
       createElement("ul", { id: "todos" }, this.state.todos.map((todo) => this.renderTodo(todo))),
     ]);
