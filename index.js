@@ -3,9 +3,14 @@
 
   if (attributes) {
     Object.keys(attributes).forEach((key) => {
-      element.setAttribute(key, attributes[key]);
+      if (key === "checked") {
+        element.checked = attributes[key];
+      } else {
+        element.setAttribute(key, attributes[key]);
+      }
     });
   }
+
 
   if (Array.isArray(children)) {
     children.forEach((child) => {
@@ -38,6 +43,7 @@ class Component {
     this._domNode = this.render();
     return this._domNode;
   }
+
   update() {
     const oldDomNode = this._domNode;
     const newDomNode = this.render();
@@ -52,21 +58,28 @@ class TodoList extends Component {
     this.state = {
       todos: [
         {text: "Сделать домашку", done: false},
-        {text : "Сделать практику", done: false},
+        {text: "Сделать практику", done: false},
         {text: "Пойти домой", done: false},
       ],
-      addInputValue : "",
+      addInputValue: "",
     }
     this.onAddTask = this.onAddTask.bind(this);
     this.onAddInputChange = this.onAddInputChange.bind(this);
+    this.onDeleteTask = this.onDeleteTask.bind(this);
+    this.onToggleTask = this.onToggleTask.bind(this);
   }
-  renderTodo(todo) {
+
+  renderTodo(todo, index) {
     return createElement("li", {}, [
-      createElement("input", { type: "checkbox"}),
-      createElement("label", {}, todo.text),
-      createElement("button", {}, "🗑️"),
+      createElement("input", {
+        type: "checkbox",
+        checked: todo.done
+      }, [], { change: () => this.onToggleTask(index) }),
+      createElement("label", todo.done ? { style: "color: gray;" } : {}, todo.text),
+      createElement("button", {}, "🗑️", { click: () => this.onDeleteTask(index) }),
     ]);
   }
+
   render() {
     return createElement("div", { class: "todo-list" }, [
       createElement("h1", {}, "TODO List"),
@@ -76,12 +89,13 @@ class TodoList extends Component {
           type: "text",
           placeholder: "Задание",
           value: this.state.addInputValue
-        }, [],   { input: this.onAddInputChange }),
-        createElement("button", { id: "add-btn" }, "+", {click : this.onAddTask}),
+        }, [], { input: this.onAddInputChange }),
+        createElement("button", { id: "add-btn" }, "+", { click: this.onAddTask }),
       ]),
-      createElement("ul", { id: "todos" }, this.state.todos.map((todo) => this.renderTodo(todo))),
+      createElement("ul", { id: "todos" }, this.state.todos.map((todo, index) => this.renderTodo(todo, index))),
     ]);
   }
+
   onAddTask() {
     const text = this.state.addInputValue.trim();
 
@@ -101,6 +115,16 @@ class TodoList extends Component {
 
   onAddInputChange(event) {
     this.state.addInputValue = event.target.value;
+  }
+
+  onToggleTask(index) {
+    this.state.todos[index].done = !this.state.todos[index].done;
+    this.update();
+  }
+
+  onDeleteTask(index) {
+    this.state.todos.splice(index, 1);
+    this.update();
   }
 }
 
